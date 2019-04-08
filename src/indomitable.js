@@ -28,10 +28,10 @@ function h(s, ...subs) {
 	// If called as a tagged template string, make references for any passed nodes
 	if(Array.isArray(s))
 		s = String.raw(s, ...subs.map((a, i) => {
-			if(a instanceof Node){
+			// if(a instanceof Node){
 				refs[i] = a
 				return `@${i}`
-			}
+			// }
 			return a
 		}))
 	console.log(s)
@@ -87,7 +87,8 @@ function h(s, ...subs) {
 				Object.defineProperty(state, ref, {
 					get: _ => node.nodeValue,
 					
-					// When a slot reference is updated
+					// When a slot reference is updated, replace the nodes
+					// Note: assumes the existing nodes haven't changed position in the DOM
 					set: (_ = []) => {
 						// Collapse arguments
 						// const newNodes = [].concat(...[].concat([_])) // [_].flat()
@@ -96,11 +97,13 @@ function h(s, ...subs) {
 						// Array.isArray() ? [_] : [].concat(..._)
 						// isFinite(_) || typeof _ === 'string' || _ instanceof Node
 
+						console.log('-'.repeat(60))
 						if(!newNodes.length)
 							newNodes.push(new Text)
-						// console.log(newNodes)
 						const parent = nodes[0].parentElement
-						// console.log('nodes[0]', nodes[0], 'parent', parent)
+						console.log('nodes:', nodes)
+						console.log('first', nodes[0], 'parent', parent)
+						console.log('set newNodes:', newNodes)
 						
 						let i = 0
 						for(let v of newNodes) if(v !== undefined && v !== null){
@@ -108,7 +111,7 @@ function h(s, ...subs) {
 							
 							// If primitive, convert to text node or replace value of existing text node
 							if(!(v instanceof Node)){
-								if(currentNode.nodeType === Node.TEXT_NODE){
+								if(currentNode && currentNode.nodeType === Node.TEXT_NODE){
 									currentNode.nodeValue = v
 									continue
 								}
@@ -117,6 +120,7 @@ function h(s, ...subs) {
 							
 							// Append or insert the node
 							if(!currentNode){
+								nodes.push(v)
 								parent.appendChild(v)
 							}else if(currentNode !== v){
 								nodes.splice(i, 0, v)
@@ -127,8 +131,11 @@ function h(s, ...subs) {
 						
 						// Remove nodes that don't belong
 						while(nodes.length > newNodes.length){
-							nodes.pop().remove()
+							const oldNode = nodes.pop()
+							if(!newNodes.includes(oldNode)) oldNode.remove() // make this more efficient
 						}
+						
+						console.log('nodes:', nodes)
 					}
 					// set: (newNodes = ['']) => {
 					// 	if(!Array.isArray(newNodes))
@@ -231,8 +238,12 @@ function h(s, ...subs) {
 		}
 	}
 	
+	if(subs) subs.forEach((a, i) => {
+		subs[i] = a
+	})
+	
 	root.refs = refs
-	root.state = state//(state)
+	root.state = state
 	
 	return root
 }
