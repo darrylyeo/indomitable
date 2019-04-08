@@ -8,14 +8,14 @@ DocumentFragment.prototype[Symbol.iterator] = function*(){
 		yield child
 	}
 }
-DocumentFragment.prototype[Symbol.isConcatSpreadable] = true
+// DocumentFragment.prototype[Symbol.isConcatSpreadable] = true
 
 
 // function h(strings) {
 	// let s = strings[0]
 	// for(let i = 1; i < strings.length; i++)
 	// 	s += arguments[i] + strings[i]
-function h(s, ...args) {
+function h(s, ...subs) {
 	// Stores references to named nodes or attributes
 	const refs = {}
 	
@@ -27,7 +27,7 @@ function h(s, ...args) {
 	
 	// If called as a tagged template string, make references for any passed nodes
 	if(Array.isArray(s))
-		s = String.raw(s, ...args.map((a, i) => {
+		s = String.raw(s, ...subs.map((a, i) => {
 			if(a instanceof Node){
 				refs[i] = a
 				return `@${i}`
@@ -58,9 +58,12 @@ function h(s, ...args) {
 			// 	const [{length}, ref, i] = match
 			
 				// Split off the text node
-				node = refs[ref] = i > 0 ? node.splitText(i) : node
+				if(i > 0) node = node.splitText(i)
 				if(i + length < nodeValue.length) node.splitText(length)
 				node.nodeValue = ''
+				
+				// Save the reference
+				refs[ref] = node
 				
 				// Only text
 				// Object.defineProperty(state, ref, {
@@ -85,13 +88,14 @@ function h(s, ...args) {
 					get: _ => node.nodeValue,
 					
 					// When a slot reference is updated
-					set: (_ = [new Text]) => {
+					set: (_ = []) => {
 						// Collapse arguments
-						// console.log(_)
-						const newNodes = [].concat(...[].concat([_])) // [_].flat()
+						// const newNodes = [].concat(...[].concat([_])) // [_].flat()
+						// const newNodes = [].concat(...[].concat(_).map(_ => Array.isArray(_) ? [_] : [].concat(..._)))
+						const newNodes = [_].flat().flatMap(v => v instanceof DocumentFragment ? [...v.childNodes] : v)
 						// Array.isArray() ? [_] : [].concat(..._)
 						// isFinite(_) || typeof _ === 'string' || _ instanceof Node
-						
+
 						if(!newNodes.length)
 							newNodes.push(new Text)
 						// console.log(newNodes)
@@ -205,7 +209,7 @@ function h(s, ...args) {
 				const ref = _ref || attrName
 				node.setAttribute(attrName, value)
 				
-				// Keep a local variable for the attribute value
+				// Keep reference to the attribute object
 				let attr = refs[ref] = node.attributes[attrName]
 				
 				// Allow attribute to be accessed and modified via "state" object
@@ -228,7 +232,7 @@ function h(s, ...args) {
 	}
 	
 	root.refs = refs
-	root.state = state(state)
+	root.state = state//(state)
 	
 	return root
 }
