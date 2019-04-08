@@ -19,25 +19,37 @@ function h(s) {
 	if(Array.isArray(s))
 		s = String.raw(...arguments)
 
+	// Make template
 	const TEMPLATE = document.createElement('template')
 	TEMPLATE.innerHTML = s.trim().replace(/>\s+</g, '><')
 	
+	// Extract HTML tree from template
 	const {content} = TEMPLATE
 	const root = content.childNodes.length === 1 ? content.firstChild : content
 	
+	// Stores references to named nodes or attributes
 	const refs = {}
+	
+	// State object; also a function that assigns argument properties to itself
 	const state = function(){
 		Object.assign(state, ...arguments)
 		return state
 	}
+	
+	// Iterate all nodes in the tree
 	for(let node = TREE_WALKER.currentNode = root; node; node = TREE_WALKER.nextNode()){
+		// Replace @references in the text with slot references
 		if(node.nodeType === Node.TEXT_NODE){
 			const {nodeValue} = node
 			// console.log(/@(\w+)/.exec(nodeValue).index)
+			
+			// When an @reference is found
 			nodeValue.replace(/@(\w+)/, ({length}, ref, i) => {
 			// const match = nodeValue.match(/@(\w+)/)
 			// if(match){
 			// 	const [{length}, ref, i] = match
+			
+				// Split off the text node
 				node = refs[ref] = i > 0 ? node.splitText(i) : node
 				if(i + length < nodeValue.length) node.splitText(length)
 				node.nodeValue = ''
@@ -62,7 +74,10 @@ function h(s) {
 				let nodes = [node]
 				Object.defineProperty(state, ref, {
 					get: _ => node.nodeValue,
+					
+					// When a slot reference is updated
 					set: (_ = [new Text]) => {
+						// Collapse arguments
 						// console.log(_)
 						const newNodes = [].concat(...[].concat([_])) // [_].flat()
 						// Array.isArray() ? [_] : [].concat(..._)
@@ -97,6 +112,7 @@ function h(s) {
 							i++
 						}
 						
+						// Remove nodes that don't belong
 						while(nodes.length > newNodes.length){
 							nodes.pop().remove()
 						}
@@ -151,7 +167,10 @@ function h(s) {
 				})
 			// }
 			})
-		}else for(const {name, value} of [...node.attributes || []]){
+		}
+		
+		// Iterate element attributes
+		else for(const {name, value} of [...node.attributes || []]){
 			if(name[0] === '@'){
 				node.removeAttribute(name)
 				const ref = name.slice(1)
@@ -167,7 +186,7 @@ function h(s) {
 			}else if(name.includes(':@')){
 				node.removeAttribute(name)
 				
-				const [attrName, ref = attrName] = name.split(':@')
+				const [attrName, _ref] = name.split(':@')
 				const ref = _ref || attrName
 				node.setAttribute(attrName, value)
 				
