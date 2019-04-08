@@ -25,7 +25,7 @@ const h = function(statics, ...interpolations){
 
 	// Make template
 	const TEMPLATE = document.createElement('template')
-	TEMPLATE.innerHTML = html.trim().replace(/>\s+</g, '><')
+	TEMPLATE.innerHTML = html.trim()//.replace(/>\s+</g, '><')
 	
 	// Extract HTML tree from template
 	const {content} = TEMPLATE
