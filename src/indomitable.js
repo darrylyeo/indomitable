@@ -63,7 +63,7 @@ function h(s) {
 				Object.defineProperty(state, ref, {
 					get: _ => node.nodeValue,
 					set: (_ = [new Text]) => {
-						console.log(_)
+						// console.log(_)
 						const newNodes = [].concat(...[].concat([_])) // [_].flat()
 						// Array.isArray() ? [_] : [].concat(..._)
 						// isFinite(_) || typeof _ === 'string' || _ instanceof Node
