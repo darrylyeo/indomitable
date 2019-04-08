@@ -1,4 +1,4 @@
-// 2018-12-17
+// 2018-12-17 to 18
 
 const TREE_WALKER = document.createTreeWalker(document)
 
@@ -110,23 +110,18 @@ const h = function(statics, ...interpolations){
 					if(!newNodes.length)
 						newNodes.push(new Text)
 						
-					console.log('Setting', ref, newNodes)
+					console.log('Setting', ref, newNodes, 'existing:', nodes)
 					// console.log('range', range, range.cloneContents())
+
+					//*
+					
+					// Using regular DOM methods
 					
 					// Determine parent element
-					// const parent = range.startContainer // nodes[0].parentElement
-					// console.log('nodes:', nodes)
+					const parent = nodes[0].parentElement
 					// console.log('first', nodes[0], 'parent', parent)
-					// console.log('set newNodes:', newNodes)
-					
-					// const firstNode = range.startContainer.childNodes[range.startOffset]
-					// const lastNode = range.endContainer.childNodes[range.endOffset]
-					// console.assert(range.startContainer === range.endContainer, 'Slot parent inconsistent')
-					// console.assert(range.endOffset - range.startOffset === nodes.length, 'Slot contents shifted', range.startOffset, range.endOffset, nodes.length)
-					
-					range.selectNode(nodes[nodes.length - 1])
-					
-					/*let i = 0, node
+
+					let i = 0, node
 					for(node of newNodes){
 						const currentNode = nodes[i]
 						
@@ -148,26 +143,22 @@ const h = function(statics, ...interpolations){
 							parent.insertBefore(node, currentNode)
 						}
 						i++
-					}*/
+					}
 					
 					// Remove nodes that don't belong
-					/*while(nodes.length > newNodes.length){
-						const oldNode = nodes.pop()
-						if(!newNodes.includes(oldNode)) oldNode.remove() // make this more efficient
-						// node.nextSibling.remove()
-					}*/
+					for(let i = newNodes.length - nodes.length; i--; )
+						node.nextSibling.remove()
 					
-					/*if(nodes.length > newNodes.length){
-						console.log('Before delete:', nodes, newNodes)
-						const range = new Range() // document.createRange()
-						range.setStartAfter(node)
-						range.setEnd(node, nodes.length - newNodes.length)
-						console.log('removing', range.cloneContents())
-						range.deleteContents()
+					nodes.length = newNodes.length
 					
-						nodes.length = newNodes.length
-					}*/
+					// while(nodes.length > newNodes.length){
+					// 	const oldNode = nodes.pop()
+					// 	if(!newNodes.includes(oldNode)) oldNode.remove() // make this more efficient
+					// }
 					
+					/*/
+					
+					// Using Range
 					
 					range.setStartBefore(nodes[0])
 					range.setEndAfter(nodes[nodes.length - 1])
@@ -179,7 +170,7 @@ const h = function(statics, ...interpolations){
 						// If primitive, convert to text node or replace value of existing text node
 						if(!(node instanceof Node)){
 							if(existingNode && existingNode.nodeType === Node.TEXT_NODE){
-								console.log('Replacing text', existingNode, node)
+								//console.log('Replacing text', existingNode, node)
 								existingNode.nodeValue = node
 								range.setStartAfter(existingNode)
 								continue
@@ -190,28 +181,51 @@ const h = function(statics, ...interpolations){
 						// Insert the node
 						if(node !== existingNode){
 							if(existingNode){
-								console.assert(!range.collapsed)
+								//console.assert(!range.collapsed)
 								nodes.splice(i, 0, node)
 							}else{
-								console.assert(range.collapsed)
+								//console.assert(range.collapsed)
 								nodes.push(node)
 							}
-							console.log('Inserting', existingNode, node)
+							//console.log('Inserting', existingNode, node)
 							range.insertNode(node)
-						}else console.log('No action', existingNode, node)
+						}//else console.log('No action', existingNode, node)
 						range.setStartAfter(node)
 						i++
 					}
 					
 					if(!range.collapsed){
-						console.log('Removing', ...range.cloneContents().childNodes)
+						//console.log('Removing', ...range.cloneContents().childNodes)
 						range.deleteContents()
 						
 						nodes.length = newNodes.length
 						// nodes = newNodes
 					}
 					
-					console.log('nodes:', nodes)
+					//*/
+					
+					
+					//console.log('nodes:', nodes)
+					
+					
+					// Random tests
+					/*
+					// const parent = range.startContainer
+					// const firstNode = range.startContainer.childNodes[range.startOffset]
+					// const lastNode = range.endContainer.childNodes[range.endOffset]
+					// console.assert(range.startContainer === range.endContainer, 'Slot parent inconsistent')
+					// console.assert(range.endOffset - range.startOffset === nodes.length, 'Slot contents shifted', range.startOffset, range.endOffset, nodes.length)
+					
+					if(nodes.length > newNodes.length){
+						console.log('Before delete:', nodes, newNodes)
+						const range = new Range() // document.createRange()
+						range.setStartAfter(node)
+						range.setEnd(node, nodes.length - newNodes.length)
+						console.log('removing', range.cloneContents())
+						range.deleteContents()
+					
+						nodes.length = newNodes.length
+					}*/
 				}
 			})
 		}
