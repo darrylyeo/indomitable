@@ -351,7 +351,8 @@ const h = function(statics, ...interpolations){
 	root.refs = refs
 	root.state = new Proxy(function(){
 		Object.assign(state, ...arguments)
-		return state
+		// return state
+		return root
 	}, {
 		get: (target, ref) => Reflect.get(state, ref),
 		set: (target, ref, value) => Reflect.set(state, ref, value),
