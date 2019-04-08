@@ -251,7 +251,7 @@ const h = function(statics, ...interpolations){
 			
 			// Style
 			if(attrName === 'style') Object.defineProperty(state, ref, {
-				get: _ => attr && attr.value,
+				get: _ => ownerElement.style,
 				set: v => {
 					// if(value != v){
 						ownerElement[attrName] = value = v
@@ -259,13 +259,27 @@ const h = function(statics, ...interpolations){
 				}
 			})
 			
+			// Event Listeners
+			else if(attrName.beginsWith('on')){
+				const type = attrName.slice(2)
+				Object.defineProperty(state, ref, {
+					get: _ => value,
+					set: v => {
+						if(value !== v){
+							if(value) node.removeEventListener(type, value, false)
+							value = newValue
+							if(v) node.addEventListener(type, v, false)
+						}
+					}
+				})
+			}
+			
 			// Property attributes
 			else if(attrName in ownerElement) Object.defineProperty(state, ref, {
-				get: _ => attr && attr.value,
+				get: _ => ownerElement[attrName],
 				set: v => {
-					if(value != v){
+					//if(value != v)
 						ownerElement[attrName] = value = v
-					}
 				}
 			})
 			
