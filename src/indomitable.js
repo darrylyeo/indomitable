@@ -15,18 +15,7 @@ DocumentFragment.prototype[Symbol.isConcatSpreadable] = true
 	// let s = strings[0]
 	// for(let i = 1; i < strings.length; i++)
 	// 	s += arguments[i] + strings[i]
-function h(s) {
-	if(Array.isArray(s))
-		s = String.raw(...arguments)
-
-	// Make template
-	const TEMPLATE = document.createElement('template')
-	TEMPLATE.innerHTML = s.trim().replace(/>\s+</g, '><')
-	
-	// Extract HTML tree from template
-	const {content} = TEMPLATE
-	const root = content.childNodes.length === 1 ? content.firstChild : content
-	
+function h(s, ...args) {
 	// Stores references to named nodes or attributes
 	const refs = {}
 	
@@ -36,8 +25,27 @@ function h(s) {
 		return state
 	}
 	
-	// Iterate all nodes in the tree
-	for(let node = TREE_WALKER.currentNode = root; node; node = TREE_WALKER.nextNode()){
+	// If called as a tagged template string, make references for any passed nodes
+	if(Array.isArray(s))
+		s = String.raw(s, ...args.map((a, i) => {
+			if(a instanceof Node){
+				refs[i] = a
+				return `@${i}`
+			}
+			return a
+		}))
+	console.log(s)
+
+	// Make template
+	const TEMPLATE = document.createElement('template')
+	TEMPLATE.innerHTML = s.trim().replace(/>\s+</g, '><')
+	
+	// Extract HTML tree from template
+	const {content} = TEMPLATE
+	const root = content.childNodes.length === 1 ? content.firstChild : content
+	
+	// Iterate all nodes in the tree and find @references
+	if(s.includes('@')) for(let node = TREE_WALKER.currentNode = root; node; node = TREE_WALKER.nextNode()){
 		// Replace @references in the text with slot references
 		if(node.nodeType === Node.TEXT_NODE){
 			const {nodeValue} = node
@@ -72,6 +80,7 @@ function h(s) {
 				
 				// Text, node, document fragment, array of any of those
 				let nodes = [node]
+				// Allow contents of slot to be accessed and modified via "state" object
 				Object.defineProperty(state, ref, {
 					get: _ => node.nodeValue,
 					
@@ -160,6 +169,7 @@ function h(s) {
 					// 		i++
 					// 	}
 						
+					//	// Remove nodes that don't belong
 					// 	while(nodes.length > newNodes.length){
 					// 		nodes.pop().remove()
 					// 	}
@@ -171,6 +181,7 @@ function h(s) {
 		
 		// Iterate element attributes
 		else for(const {name, value} of [...node.attributes || []]){
+			// Attributes starting with "@" denote an element reference
 			if(name[0] === '@'){
 				node.removeAttribute(name)
 				const ref = name.slice(1)
@@ -183,14 +194,21 @@ function h(s) {
 				// 		set: v => newNode.nodeValue = v
 				// 	})
 				// }
-			}else if(name.includes(':@')){
+			}
+			
+			// Attributes with ":@" denote an attribute reference
+			else if(name.includes(':@')){
 				node.removeAttribute(name)
 				
+				// Parse attribute name and reference name
 				const [attrName, _ref] = name.split(':@')
 				const ref = _ref || attrName
 				node.setAttribute(attrName, value)
 				
+				// Keep a local variable for the attribute value
 				let attr = refs[ref] = node.attributes[attrName]
+				
+				// Allow attribute to be accessed and modified via "state" object
 				Object.defineProperty(state, ref, {
 					get: _ => attr && attr.value,
 					set: v => {
@@ -208,8 +226,9 @@ function h(s) {
 			}
 		}
 	}
+	
 	root.refs = refs
-	root.state = state
+	root.state = state(state)
 	
 	return root
 }
