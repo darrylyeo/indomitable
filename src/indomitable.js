@@ -168,6 +168,7 @@ function h(s) {
 				node.removeAttribute(name)
 				
 				const [attrName, ref = attrName] = name.split(':@')
+				const ref = _ref || attrName
 				node.setAttribute(attrName, value)
 				
 				let attr = refs[ref] = node.attributes[attrName]
