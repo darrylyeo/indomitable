@@ -13,7 +13,7 @@ const h = function(statics, ...interpolations){
 		}
 		return a
 	}))
-	console.log(html)
+	// console.log(html)
 
 	// Make template
 	const TEMPLATE = document.createElement('template')
@@ -100,18 +100,15 @@ const h = function(statics, ...interpolations){
 				// Intent: ambiguous
 				// Accepts text, node, document fragment, array of any of those
 				set: (arg = []) => {
-					console.log('-'.repeat(60))
-					
 					// Collapse and filter arguments
 					const newNodes = [arg].flat().flatMap(v => v instanceof DocumentFragment ? [...v.childNodes] : v)
 						.filter(v => v !== undefined && v !== null)
 					
-					// If empty, make empty text node to hold position
+					// If empty, create empty text node to hold position
 					if(!newNodes.length)
 						newNodes.push(new Text)
-						
-					console.log('Setting', ref, newNodes, 'existing:', nodes)
-					// console.log('range', range, range.cloneContents())
+					
+					// console.log('Setting', ref, newNodes, 'existing:', nodes)
 
 					//*
 					
@@ -146,15 +143,17 @@ const h = function(statics, ...interpolations){
 					}
 					
 					// Remove nodes that don't belong
-					for(let i = newNodes.length - nodes.length; i--; )
-						node.nextSibling.remove()
+					// for(let i = nodes.length - newNodes.length; i > 0; i--){
+					// 	// console.log('removing', node, node.nextSibling)
+					// 	node.nextSibling.remove()
+					// }
+					const set = new Set(newNodes)
+					for(let i = nodes.length - newNodes.length; i > 0; i--){
+						const oldNode = nodes.pop()
+						if(!set.has(oldNode)) oldNode.remove() // make this more efficient
+					}
 					
 					nodes.length = newNodes.length
-					
-					// while(nodes.length > newNodes.length){
-					// 	const oldNode = nodes.pop()
-					// 	if(!newNodes.includes(oldNode)) oldNode.remove() // make this more efficient
-					// }
 					
 					/*/
 					
@@ -162,6 +161,7 @@ const h = function(statics, ...interpolations){
 					
 					range.setStartBefore(nodes[0])
 					range.setEndAfter(nodes[nodes.length - 1])
+					// console.log('range', range, range.cloneContents())
 					
 					let i = 0
 					for(let node of newNodes){
@@ -242,7 +242,7 @@ const h = function(statics, ...interpolations){
 	}, {
 		get: (target, ref) => Reflect.get(state, ref),
 		set: (target, ref, value) => Reflect.set(state, ref, value),
-		has: (target, ref) => Reflect.has(target, ref)
+		has: (target, ref) => Reflect.has(state, ref)
 	})
 	
 	return root
