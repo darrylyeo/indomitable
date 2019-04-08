@@ -119,7 +119,7 @@ const h = function(statics, ...interpolations){
 					
 					// Implementation using domdiff (https://github.com/WebReflection/domdiff by Andrea Giammarchi)
 					if(false){
-						nodes = domdiff(nodes[0].parentElement, nodes, newNodes)
+						nodes = domdiff(nodes[0].parentElement, nodes, newNodes.map(v => v instanceof Node ? v : new Text(v)))
 					}
 
 					//*
