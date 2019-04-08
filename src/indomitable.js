@@ -238,9 +238,9 @@ function h(s, ...subs) {
 		}
 	}
 	
-	if(subs) subs.forEach((a, i) => {
-		subs[i] = a
-	})
+	if(subs) subs.forEach((a, i) =>
+		state[i] = a
+	)
 	
 	root.refs = refs
 	root.state = state
