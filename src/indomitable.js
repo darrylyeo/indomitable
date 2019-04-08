@@ -246,9 +246,31 @@ const h = function(statics, ...interpolations){
 			const {ownerElement} = node
 			const attr = node
 			const attrName = node.name
+			let value = ownerElement.getAttribute(attrName)
+			
+			
+			// Style
+			if(attrName === 'style') Object.defineProperty(state, ref, {
+				get: _ => attr && attr.value,
+				set: v => {
+					// if(value != v){
+						ownerElement[attrName] = value = v
+					// }
+				}
+			})
+			
+			// Property attributes
+			else if(attrName in ownerElement) Object.defineProperty(state, ref, {
+				get: _ => attr && attr.value,
+				set: v => {
+					if(value != v){
+						ownerElement[attrName] = value = v
+					}
+				}
+			})
 			
 			// Regular attribute
-			Object.defineProperty(state, ref, {
+			else Object.defineProperty(state, ref, {
 				get: _ => attr && attr.value,
 				set: v => {
 					if(!attr){
