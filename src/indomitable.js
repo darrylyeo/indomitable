@@ -5,6 +5,9 @@ window.domdiff=(()=>{function r(r,e,n,o,f,i,c,u,l){for(var s,h=new Map,d=f,g=0,v
 
 const TREE_WALKER = document.createTreeWalker(document)
 
+// https://github.com/developit/preact/blob/33fc697ac11762a1cb6e71e9847670d047af7ce5/src/varants.js
+const IS_NON_DIMENSIONAL = /acit|ex(?:s|g|n|p|$)|rph|ows|mnc|ntw|ine[ch]|zoo|^ord/i
+
 const h = function(statics, ...interpolations){
 	// Stores references to named nodes or attributes
 	const refs = {}
@@ -217,26 +220,6 @@ const h = function(statics, ...interpolations){
 					
 					
 					//console.log('nodes:', nodes)
-					
-					
-					// Random tests
-					/*
-					// const parent = range.startContainer
-					// const firstNode = range.startContainer.childNodes[range.startOffset]
-					// const lastNode = range.endContainer.childNodes[range.endOffset]
-					// console.assert(range.startContainer === range.endContainer, 'Slot parent inconsistent')
-					// console.assert(range.endOffset - range.startOffset === nodes.length, 'Slot contents shifted', range.startOffset, range.endOffset, nodes.length)
-					
-					if(nodes.length > newNodes.length){
-						console.log('Before delete:', nodes, newNodes)
-						const range = new Range() // document.createRange()
-						range.setStartAfter(node)
-						range.setEnd(node, nodes.length - newNodes.length)
-						console.log('removing', range.cloneContents())
-						range.deleteContents()
-					
-						nodes.length = newNodes.length
-					}*/
 				}
 			})
 		}
@@ -248,26 +231,86 @@ const h = function(statics, ...interpolations){
 			const attrName = node.name
 			let value = ownerElement.getAttribute(attrName)
 			
-			
 			// Style
-			if(attrName === 'style') Object.defineProperty(state, ref, {
-				get: _ => ownerElement.style,
-				set: v => {
-					// if(value != v){
-						ownerElement[attrName] = value = v
-					// }
-				}
-			})
+			// Based on hyperStyle:
+			// https://github.com/WebReflection/hyperHTML/blob/master/cjs/objects/hyperstyle.js
+			if(attrName === 'style'){
+				const isSVG = 'ownerSVGElement' in ownerElement
+				if(isSVG)
+					ownerElement.setAttribute('style', '')
+				
+				const style = isSVG ? ownerElement.getAttributeNode('style') : ownerElement.style
+				let value, valueIsObject = false
+				
+				Object.defineProperty(state, ref, {
+					get: _ => value,
+					set: v => {
+						if(typeof v === 'object'){
+							if(!v) return
+							
+							// Add px units to numeric, dimensional properties
+							for(const p in v){
+								if(typeof v[p] === 'number' && !IS_NON_DIMENSIONAL.test(p) && !p.startsWith('--'))
+									v[p] += 'px'
+								if(Array.isArray(v[p]))
+									v[p] = v[p].toString()
+							}
+							
+							// SVG
+							if(isSVG){
+								// Create CSS string from constructed object and overwrite attribute value
+								style.value = Object.keys(newStyle)
+									.map(p => `${p.replace(/([^A-Z])([A-Z]+)/g, (_, $1, $2) => $1 + '-' + $2.toLowerCase())}:${newStyle[p]};`)
+									.join('')
+							}
+							
+							// HTML
+							else{
+								// Remove properties that no longer exist
+								if(valueIsObject){
+									if(value !== v)
+										for(const key in value)
+											if(!(key in v))
+												style[key] = ''
+								}else{
+									// If using string, reset
+									style.cssText = ''
+								}
+								
+								// Set properties on .style property
+								for(const p in v)
+									if(p.startsWith('--'))
+										style.setProperty(p, v[p])
+									else
+										style[p] = v[p]
+							}
+							
+							value = isSVG ? newStyle : v
+							valueIsObject = true
+						}
+						
+						// Replace CSS string
+						else if(value != v){
+							if(isSVG)
+								style.value = v || ''
+							else
+								style.cssText = v || ''
+							value = v
+							valueIsObject = false
+						}
+					}
+				})
+			}
 			
 			// Event Listeners
-			else if(attrName.beginsWith('on')){
+			else if(attrName.startsWith('on')){
 				const type = attrName.slice(2)
 				Object.defineProperty(state, ref, {
 					get: _ => value,
 					set: v => {
 						if(value !== v){
 							if(value) node.removeEventListener(type, value, false)
-							value = newValue
+							value = v
 							if(v) node.addEventListener(type, v, false)
 						}
 					}
@@ -278,7 +321,7 @@ const h = function(statics, ...interpolations){
 			else if(attrName in ownerElement) Object.defineProperty(state, ref, {
 				get: _ => ownerElement[attrName],
 				set: v => {
-					//if(value != v)
+					if(value != v)
 						ownerElement[attrName] = value = v
 				}
 			})
