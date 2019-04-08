@@ -38,7 +38,7 @@ const h = function(statics, ...interpolations){
 			const {nodeValue} = node
 
 			// When an @reference is found
-			nodeValue.replace(/@(\w+)/, ({length}, ref, i) => {
+			nodeValue.replace(/@([\w$]+)/, ({length}, ref, i) => {
 				// Split off the text node
 				if(i > 0) node = node.splitText(i)
 				if(i + length < nodeValue.length) node.splitText(length)
@@ -225,7 +225,7 @@ const h = function(statics, ...interpolations){
 		}
 		
 		// Bound attributes - Allow attribute value to be accessed and modified via "state" object
-		else{
+		else if(node instanceof Attr){
 			const {ownerElement} = node
 			const attr = node
 			const attrName = node.name
@@ -309,9 +309,9 @@ const h = function(statics, ...interpolations){
 					get: _ => value,
 					set: v => {
 						if(value !== v){
-							if(value) node.removeEventListener(type, value, false)
+							if(value) ownerElement.removeEventListener(type, value, false)
 							value = v
-							if(v) node.addEventListener(type, v, false)
+							if(v) ownerElement.addEventListener(type, v, false)
 						}
 					}
 				})
@@ -319,7 +319,7 @@ const h = function(statics, ...interpolations){
 			
 			// Property attributes
 			else if(attrName in ownerElement) Object.defineProperty(state, ref, {
-				get: _ => ownerElement[attrName],
+				get: _ => value,
 				set: v => {
 					if(value != v)
 						ownerElement[attrName] = value = v
@@ -333,7 +333,7 @@ const h = function(statics, ...interpolations){
 					if(!attr){
 						ownerElement.setAttribute(attrName, v)
 						attr = ownerElement.attributes[attrName]
-					}else if(v === undefined || v === null){
+					}else if(v === undefined || v === null || v === false){
 						ownerElement.removeAttribute(attrName)
 						attr = null
 					}else{
