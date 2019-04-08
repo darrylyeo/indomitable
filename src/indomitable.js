@@ -1,3 +1,5 @@
+// 2018-12-15
+
 const TREE_WALKER = document.createTreeWalker(document)
 //const TEMPLATE = document.createElement('template')
 
@@ -15,7 +17,7 @@ DocumentFragment.prototype[Symbol.iterator] = function*(){
 	// let s = strings[0]
 	// for(let i = 1; i < strings.length; i++)
 	// 	s += arguments[i] + strings[i]
-function h(s, ...subs) {
+function h(html, ...interpolations) {
 	// Stores references to named nodes or attributes
 	const refs = {}
 	
@@ -26,26 +28,26 @@ function h(s, ...subs) {
 	}
 	
 	// If called as a tagged template string, make references for any passed nodes
-	if(Array.isArray(s))
-		s = String.raw(s, ...subs.map((a, i) => {
+	if(html && html.raw)
+		html = String.raw(html, ...interpolations.map((a, i) => {
 			// if(a instanceof Node){
 				refs[i] = a
 				return `@${i}`
 			// }
-			return a
+			// return a
 		}))
-	console.log(s)
+	console.log(html)
 
 	// Make template
 	const TEMPLATE = document.createElement('template')
-	TEMPLATE.innerHTML = s.trim().replace(/>\s+</g, '><')
+	TEMPLATE.innerHTML = html.trim().replace(/>\s+</g, '><')
 	
 	// Extract HTML tree from template
 	const {content} = TEMPLATE
 	const root = content.childNodes.length === 1 ? content.firstChild : content
 	
 	// Iterate all nodes in the tree and find @references
-	if(s.includes('@')) for(let node = TREE_WALKER.currentNode = root; node; node = TREE_WALKER.nextNode()){
+	if(html.includes('@')) for(let node = TREE_WALKER.currentNode = root; node; node = TREE_WALKER.nextNode()){
 		// Replace @references in the text with slot references
 		if(node.nodeType === Node.TEXT_NODE){
 			const {nodeValue} = node
@@ -238,7 +240,7 @@ function h(s, ...subs) {
 		}
 	}
 	
-	if(subs) subs.forEach((a, i) =>
+	if(interpolations) interpolations.forEach((a, i) =>
 		state[i] = a
 	)
 	
