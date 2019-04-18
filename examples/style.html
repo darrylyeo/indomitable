@@ -1,0 +1,48 @@
+<body>
+
+<script src="../src/indomitable.js"></script>
+<script>
+const root = h`
+	<div style:@wrapper-style>
+		<h1 style:@heading-style>Style attribute</h1>
+		<div style:@div-style>div</div>
+	</div>
+`
+
+document.body.append(root)
+
+
+root.state({
+    wrapperStyle: 'cursor: pointer',
+    
+    headingStyle: {
+        color: 'brown',
+        backgroundColor: 'lightgreen',
+        padding: '1rem'
+    },
+    
+    divStyle: {
+        width: 300,
+        height: '150px',
+        '--theta': -4,
+        transform: 'rotate(calc(1deg * var(--theta))',
+        'font-family': 'fantasy',
+        'font-size': 100,
+        backgroundColor: 'palegoldenrod',
+        boxShadow: [
+            '10 10px 20px',
+            '20 20px 40px' // [20, 20, 40]
+        ],
+        display: 'flex',
+        justifyContent: 'center',
+        'align-items': 'center'
+    }
+})
+
+const increaseWidth = () => {
+    const {divStyle} = root.state
+    root.state.divStyle = {...divStyle, '--theta': divStyle['--theta'] + 1, width: parseInt(divStyle.width) + 1}
+    requestAnimationFrame(increaseWidth)
+}
+increaseWidth()
+</script>
