@@ -12,7 +12,7 @@ const h = function(statics, ...interpolations){
 	
 	const html = statics.raw
 		? String.raw(statics, ...interpolations.map((a, i) => {
-			if(a instanceof Node){
+			if(typeof a === 'object'){
 				refs[i] = a
 				return `@${i}`
 			}
