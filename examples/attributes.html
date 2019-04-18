@@ -1,0 +1,63 @@
+<style>
+    body {
+        display: grid;
+        grid-gap: 1rem;
+        justify-content: start;
+        align-items: start;
+    }
+</style>
+<body>
+
+<script src="../src/indomitable.js"></script>
+<script>
+const img = h`
+    <img src:@ width:@ height:@ title:@ alt:@>
+`
+const input1 = h`
+	<input type:@ onclick:@ value:@>
+`
+const input2 = h`
+	<input type:@ disabled:@ placeholder:@ oninput:@>
+`
+const input3 = h`
+	<input type:@ required:@ checked:@>
+`
+const input4 = h`
+	<div contenteditable:@>Edit this content</div>
+`
+
+document.body.append(
+    h`<h2>Attributes</h2>`,
+    img, input1, input2, input3, input4
+)
+
+
+img.state({
+    src: 'https://picsum.photos/600/400',
+    width: 300,
+    height: 200,
+    title: 'Image from Picsum',
+    alt: 'A placeholder image.'
+})
+
+input1.state({
+    type: 'button',
+    value: 'Toggle',
+    onclick(){
+        input2.state.disabled = !input2.state.disabled
+        input3.state.checked = !input3.state.checked
+        input4.state.contenteditable = input4.state.contenteditable !== 'true'
+    }
+})
+input2.state({
+    type: 'text',
+    placeholder: 'Enter a color name',
+    oninput(){
+        document.body.style.backgroundColor = this.value
+    }
+})
+input3.state({
+    type: 'checkbox',
+    checked: false,
+})
+</script>
