@@ -156,7 +156,7 @@ const h = function(statics, ...interpolations){
 						// 	node.nextSibling.remove()
 						// }
 						const set = new Set(newNodes)
-						for(let i = nodes.length - newNodes.length; i > 0; i--){
+						for(const l = nodes.length; i < l; i++){
 							const oldNode = nodes.pop()
 							if(!set.has(oldNode)) oldNode.remove() // make this more efficient
 						}
