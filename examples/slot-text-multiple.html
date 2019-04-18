@@ -1,0 +1,21 @@
+<body>
+
+<script src="../src/indomitable.js"></script>
+<script>
+const root = h`
+	<div>
+		<h1>Multiple text slots</h1>
+		<p>@a + @b = @c</p>
+		<img src="https://picsum.photos/500/400">
+	</div>
+`
+document.body.append(root)
+
+onclick = function(){
+	const a = Math.random() * 50 | 0
+	const b = Math.random() * 50 | 0
+	const c = a + b
+	root.state({a, b, c})
+}
+onclick()
+</script>
