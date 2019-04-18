@@ -1,22 +1,21 @@
-# inDOMitable.js
+<style>
+body {
+	font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+}
+article {
+	padding: 0.5rem;
+}
+marquee {
+	display: inline-block;
+	max-width: 300px;
+}
+</style>
 
-Create, reference, and update HTML/DOM objects with ease. Verbose native JavaScript APIs shall never subdue you!
+<body>
 
----
+<script src="../src/indomitable.js"></script>
 
-The native JavaScript APIs for interfacing with the HTML Document Object Model (DOM) can be very verbose. Here is the code for generating `<div>Hello world!</div>`:
-
-```
-const div = document.createElement('div')
-const content = document.createTextNode('Hello world!')
-div.appendChild(content)
-document.body.appendChild(div)
-```
-
-
-inDOMitable.js aims to make a lot of that simpler, without sacrificing performance. The framework defines a function, `h`, which you can pass "@"-annotated HTML. The result is an HTML tree that is ready to use, along with a `.state` object to access and update the annotated text nodes, elements and attributes.
-
-```
+<script>
 const view = h`
 	<article @article>
 		<img src:@image style:@image-style>
@@ -65,4 +64,4 @@ console.log(view.outerHTML)
 
 window.onmousemove = ({x, y}) =>
 	view.state({x, y})
-```
+</script>
