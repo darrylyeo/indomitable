@@ -1,0 +1,98 @@
+<style>
+* {
+	box-sizing: border-box;
+	margin: 1px;
+}
+body {
+	font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+}
+main {
+	display: flex;
+	flex-wrap: wrap;
+	
+	display: grid;
+	grid-auto-flow: row dense;
+	grid-template-columns: repeat( auto-fit, minmax(50px, 1fr) );
+}
+marquee {
+	display: inline-block;
+	max-width: 300px;
+}
+box {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 0.5rem;
+}
+hr {
+	width: 100%;
+	margin: 2rem 0;
+	height: 0;
+	padding: 0;
+}
+</style>
+
+<body>
+
+
+
+<script src="../src/indomitable.js"></script>
+<script>
+
+const $view = h`
+	<main @main>
+		@slot1
+		<hr>
+		@slot2
+		@slot3
+	</main>
+`
+document.body.appendChild($view)
+
+
+function random(a, b = 0){
+	return a + Math.random() * (b - a) | 0
+}
+
+
+let x = 0
+const groups = [
+	undefined,
+	'',
+	'Whee',
+	h`Yay`,
+	h`<marquee>Bloink</marquee>`,
+	[h`One`, h`<s>two</s>`, h`<b>three</b>`]
+]
+let boxes = Array(75).fill().map(() => h`
+	<box style="width: ${random(40, 120)}px; height: ${random(40, 120)}px; background-color: #${random(0xffffff).toString(16)}; align-self: center; border-radius: ${random(100)}% ${random(100)}% ${random(100)}% ${random(100)}%/${random(100)}% ${random(100)}% ${random(100)}% ${random(100)}%">
+		${random(100000)}
+	</box>
+	<box style="grid-row-end: span ${random(1, 6)}; grid-column-end: span ${random(1, 6)}; background-color: #${random(0xffffff).toString(16).padStart(6)}">
+		${random(100000)}
+	</box>
+`).flatMap(v => [...v.childNodes])
+console.log(boxes)
+
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = random(i + 1);
+        [array[i], array[j]] = [array[j], array[i]]
+    }
+}
+
+const update = () => {
+	boxes = boxes.reverse()
+	// shuffleArray(boxes)
+	$view.state({
+		slot1: boxes,
+		// slot2: x++,
+		// slot3: groups[random(groups.length)],
+	})
+	// requestAnimationFrame(update)
+	// setTimeout(update, 1000);
+}
+update()
+</script>
+
+</body>
