@@ -26,12 +26,12 @@ root.state({
 		height: '150px',
 		'--theta': -4,
 		transform: 'rotate(calc(1deg * var(--theta))',
-		'font-family': 'fantasy',
+		'font-family': 'sans-serif',
 		'font-size': 100,
 		backgroundColor: 'palegoldenrod',
 		boxShadow: [
-			'10px 10px 20px',
-			'20px 20px 40px' // [20, 20, 40]
+			'brown 3px 5px 10px',
+			'brown 6px 10px' // [20, 20, 40]
 		],
 		display: 'flex',
 		justifyContent: 'center',
@@ -39,10 +39,10 @@ root.state({
 	}
 })
 
-const increaseWidth = () => {
+const animate = () => {
 	const {divStyle} = root.state
 	root.state.divStyle = {...divStyle, '--theta': divStyle['--theta'] + 1, width: parseInt(divStyle.width) + 1}
-	requestAnimationFrame(increaseWidth)
+	requestAnimationFrame(animate)
 }
-increaseWidth()
+animate()
 </script>
