@@ -1,0 +1,20 @@
+<body>
+
+<script src="../src/indomitable.js"></script>
+<script>
+const root = h`
+	<div>
+		<h1>Single text slot</h1>
+		<p>@message</p>
+		<img src="https://picsum.photos/500/400">
+	</div>
+`
+
+document.body.append(root)
+
+
+root.state({message: 'Hello world!'})
+
+// onclick = () =>
+//     root.state({message: prompt('Message')})
+</script>
