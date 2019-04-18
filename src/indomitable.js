@@ -129,6 +129,7 @@ const h = function(statics, ...interpolations){
 							if(!(node instanceof Node)){
 								if(currentNode && currentNode.nodeType === Node.TEXT_NODE){
 									currentNode.nodeValue = node
+									i++
 									continue
 								}
 								node = new Text(node) // document.createTextNode
