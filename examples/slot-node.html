@@ -1,0 +1,19 @@
+<body>
+
+<script src="../src/indomitable.js"></script>
+<script>
+const root = h`
+	<div>
+		<h1>Single node slot</h1>
+		<p>Image:</p>
+		@image
+	</div>
+`
+const image = h`
+	<img src="https://picsum.photos/500/400">
+`
+
+document.body.append(root)
+
+root.state({image})
+</script>
