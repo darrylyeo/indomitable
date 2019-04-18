@@ -73,15 +73,6 @@ const h = function(statics, ...interpolations){
 	
 	
 	// Create a "state" object with getters and setters to update the references
-	// The state object can be called as a function to assign argument properties to itself
-	// const state = new Proxy({}, {
-	// 	apply(state, _this, args) {
-	// 		Object.assign(state, ...args)
-	// 		return state
-	// 	}
-	// })
-	
-	// Create a "state" object with getters and setters to update the references
 	const state = {}
 	
 	for(const ref in refs){
