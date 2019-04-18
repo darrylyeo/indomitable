@@ -238,7 +238,7 @@ const h = function(statics, ...interpolations){
 					ownerElement.setAttribute('style', '')
 				
 				const style = isSVG ? ownerElement.getAttributeNode('style') : ownerElement.style
-				let value, valueIsObject = false
+				let valueIsObject = false
 				
 				Object.defineProperty(state, ref, {
 					get: _ => value,
