@@ -1,0 +1,27 @@
+<body>
+
+<script src="../src/indomitable.js"></script>
+
+<script>
+const button = h`
+	<button
+		onclick:@
+		onmouseover:@when-hovered
+		style:@
+		>
+		@text
+	</button>
+`.state({
+	text: 'This is a button!',
+	whenHovered(){
+		this.state.text += '!'
+	},
+	onclick(){
+		this.state.style = {
+			fontSize: parseFloat(this.state.style.fontSize || 16) * 1.1
+		}
+	}
+})
+
+document.body.append(button)
+</script>
