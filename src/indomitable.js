@@ -121,7 +121,7 @@ const h = function(statics, ...interpolations){
 						const parent = nodes[0].parentElement
 						// console.log('first', nodes[0], 'parent', parent)
 	
-						let i = 0, node
+						let i = 0, node, previousNode
 						for(node of newNodes){
 							const currentNode = nodes[i]
 							
@@ -129,6 +129,8 @@ const h = function(statics, ...interpolations){
 							if(!(node instanceof Node)){
 								if(currentNode && currentNode.nodeType === Node.TEXT_NODE){
 									currentNode.nodeValue = node
+									
+									previousNode = currentNode
 									i++
 									continue
 								}
@@ -136,13 +138,15 @@ const h = function(statics, ...interpolations){
 							}
 							
 							// Append or insert the node
+							// Insert the node
 							if(!currentNode){
 								nodes.push(node)
-								parent.appendChild(node)
+								parent.insertBefore(node, previousNode.nextSibling)
 							}else if(currentNode !== node){
 								nodes.splice(i, 0, node)
 								parent.insertBefore(node, currentNode)
 							}
+							previousNode = node
 							i++
 						}
 						
